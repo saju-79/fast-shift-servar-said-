@@ -4,5 +4,25 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "mongodb": "^7.1.0"
-  }
+  },
+  "name": "fast-shift-server-said",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saju-79/fast-shift-servar-said-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/saju-79/fast-shift-servar-said-/issues"
+  },
+  "homepage": "https://github.com/saju-79/fast-shift-servar-said-#readme"
 }
