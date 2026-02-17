@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 // --- Middleware ---
 app.use(cors());
@@ -45,20 +45,22 @@ async function run() {
         });
         app.get('/parcels', async (req, res) => {
             try {
-                const { email, payment_status, delivery_status } = req.query;
-                let query = {}
-                if (email) {
-                    query = { created_by: email }
-                }
+                const userEmail = req.query.email;
+                const query = userEmail ? { created_by: userEmail } : {};
+                // const { email, payment_status, delivery_status } = req.query;
+                // let query = {}
+                /* if (email) {
+                    query.created_by = email;
+                } */
 
-                if (payment_status) {
-                    query.payment_status = payment_status
-                }
+                // if (payment_status) {
+                //     query.payment_status = payment_status
+                // }
 
-                if (delivery_status) {
+                /* if (delivery_status) {
                     query.delivery_status = delivery_status
                 }
-
+ */
                 const options = {
                     sort: { createdAt: -1 }, // Newest first
                 };
@@ -72,6 +74,16 @@ async function run() {
                 res.status(500).send({ message: 'Failed to get parcels' });
             }
         });
+
+        // parcels delteted 
+        app.delete('/parcels/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+
+            const result = await parcelsCollection.deleteOne(query);
+            res.send(result);
+        })
+
 
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
