@@ -1,2 +1,5 @@
 node_modules
 .env
+firebase-adminsdk*.json
+*.json
+fast-shift-d5212-firebase-adminsdk-fbsvc-517e858b5f.json
