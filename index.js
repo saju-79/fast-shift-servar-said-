@@ -51,7 +51,7 @@ async function run() {
             try {
                 const idToken = token.split(' ')[1];
                 const decoded = await admin.auth().verifyIdToken(idToken);
-                console.log('decoded in the token', decoded);
+                // console.log('decoded in the token', decoded);
                 req.decoded_email = decoded.email;
                 next();
             }
@@ -262,31 +262,47 @@ async function run() {
             res.send(result);
         });
         app.patch('/riders/:id', async (req, res) => {
-            const status = req.body.status;
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
-            const updatedDoc = {
-                $set: {
-                    status: status,
-                    workStatus: 'available'
-                }
-            }
+            try {
+                const { status, email } = req.body;
+                const id = req.params.id;
 
-            const result = await ridersCollection.updateOne(query, updatedDoc);
+                const query = { _id: new ObjectId(id) };
 
-            if (status === 'approved') {
-                const email = req.body.email;
-                const userQuery = { email }
-                const updateUser = {
+                const updatedDoc = {
                     $set: {
-                        role: 'rider'
+                        status: status,
+                        workStatus: status === 'approved' ? 'available' : 'pending'
                     }
-                }
-                const userResult = await userCollection.updateOne(userQuery, updateUser);
-            }
+                };
 
-            res.send(result);
-        })
+                // 1️⃣ Update Rider Collection
+                const riderResult = await ridersCollection.updateOne(query, updatedDoc);
+
+                // 2️⃣ If Approved → Update User Role
+                let userResult = null;
+
+                if (status === 'approved') {
+                    const userQuery = { email };
+                    console.log(email, "email")
+                    const updateUser = {
+                        $set: { role: 'rider' }
+                    };
+
+                    userResult = await usersCollection.updateOne(userQuery, updateUser);
+                    console.log(userResult)
+                }
+
+                // 3️⃣ Send single response
+                res.send({
+                    riderModified: riderResult.modifiedCount,
+                    userModified: userResult?.modifiedCount || 0
+                });
+
+            } catch (error) {
+                console.log(error);
+                res.status(500).send({ message: 'Server Error' });
+            }
+        });
 
 
 
