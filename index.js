@@ -11,9 +11,9 @@ require("dotenv").config();
 const admin = require("firebase-admin");
 // require("dotenv").config();
 
+// const firebaselinks = ``
 
-
-const serviceAccount = require("./fast-ashift.json.json");
+const serviceAccount = require("./fast-shift-d5212-firebase-adminsdk-fbsvc-517e858b5f.json");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
@@ -61,6 +61,7 @@ async function run() {
 
 
         }
+        console.log(verifyFBToken, "verofy token ")
         // const verifyFBToken = async (req, res, next) => {
         //     const token = req.headers.authorization;
 
@@ -230,7 +231,37 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
-        app.patch('/riders/:id', verifyFBToken, verifyAdmin, async (req, res) => {
+
+        app.delete('/riders/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+
+            const result = await ridersCollection.deleteOne(query);
+            res.send(result);
+        });
+        app.get('/riders', async (req, res) => {
+            const status = req.query.status;
+
+            let query = {};
+            if (status) query.status = status;
+
+            const result = await ridersCollection.find(query).toArray();
+            res.send(result);
+        });
+        // PATCH rider status
+        app.patch('/riders/:id', async (req, res) => {
+            const id = req.params.id;
+            const { status } = req.body;
+
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: { status }
+            };
+
+            const result = await ridersCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        });
+        app.patch('/riders/:id', async (req, res) => {
             const status = req.body.status;
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
@@ -256,6 +287,7 @@ async function run() {
 
             res.send(result);
         })
+
 
 
         // Connect the client to the server	(optional starting in v4.7)
