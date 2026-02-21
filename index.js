@@ -250,49 +250,34 @@ async function run() {
         });
         // PATCH rider status
         app.patch('/riders/:id', async (req, res) => {
-            const id = req.params.id;
-            const { status } = req.body;
-
-            const filter = { _id: new ObjectId(id) };
-            const updateDoc = {
-                $set: { status }
-            };
-
-            const result = await ridersCollection.updateOne(filter, updateDoc);
-            res.send(result);
-        });
-        app.patch('/riders/:id', async (req, res) => {
             try {
+
                 const { status, email } = req.body;
                 const id = req.params.id;
 
-                const query = { _id: new ObjectId(id) };
+                const riderQuery = { _id: new ObjectId(id) };
 
-                const updatedDoc = {
+                const riderUpdate = {
                     $set: {
-                        status: status,
+                        status,
                         workStatus: status === 'approved' ? 'available' : 'pending'
                     }
                 };
 
-                // 1️⃣ Update Rider Collection
-                const riderResult = await ridersCollection.updateOne(query, updatedDoc);
+                const riderResult = await ridersCollection.updateOne(riderQuery, riderUpdate);
 
-                // 2️⃣ If Approved → Update User Role
                 let userResult = null;
 
-                if (status === 'approved') {
-                    const userQuery = { email };
-                    console.log(email, "email")
-                    const updateUser = {
-                        $set: { role: 'rider' }
-                    };
+                if (status === 'approved' && email) {
 
-                    userResult = await usersCollection.updateOne(userQuery, updateUser);
-                    console.log(userResult)
+                    const userQuery = { email: email.toLowerCase().trim() };
+
+                    userResult = await usersCollection.updateOne(
+                        userQuery,
+                        { $set: { role: 'rider' } }
+                    );
                 }
 
-                // 3️⃣ Send single response
                 res.send({
                     riderModified: riderResult.modifiedCount,
                     userModified: userResult?.modifiedCount || 0
@@ -303,8 +288,6 @@ async function run() {
                 res.status(500).send({ message: 'Server Error' });
             }
         });
-
-
 
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
